@@ -102,12 +102,16 @@ public class DebugVirtualMachine extends VirtualMachine {
               // instrinsic fxn, don't display source  
               if(code instanceof ReadCode) {
                 System.out.println("**** READ ****");
+                code.execute(this);
+                pc++;
                 isIntrinsic = true;
                 break;
               }
               // instrinsic fxn, don't display source
               if(code instanceof WriteCode) {
                 System.out.println("**** WRITE ****");
+                code.execute(this);
+                pc++;
                 isIntrinsic = true;
                 break;
               }
@@ -115,7 +119,7 @@ public class DebugVirtualMachine extends VirtualMachine {
               
               // if fer same && new line
               // if fer +1 or new line 
-              if((nextEnvSize == FERstack.size() - 1) && (code instanceof LineCode)) {
+              if((nextEnvSize-1 == FERstack.size()) && (code instanceof LineCode)) {
                 code.execute(this);
                 pc++;   
                 stepIn = false;
