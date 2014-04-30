@@ -46,6 +46,21 @@ public class DebugVirtualMachine extends VirtualMachine {
 
             ByteCode code = program.getCode(pc);
 
+            if(code instanceof FunctionCode) {
+                for(int i = 0; i < FERstack.size(); i++) {
+                    if(FERstack.size() == 1) {
+                        FERstack.get(i)).dump();    
+                    } else if(FERstack.size() > 1) {
+                        for(int j = 0; j < FERstack.get(i).size(); j++) {
+                            FERstack.get(i).dump()
+                        }
+                    } else {
+                        // do nothing
+                    }
+                    
+                }
+            }
+
             // check bp
             if (code instanceof LineCode) {
 
