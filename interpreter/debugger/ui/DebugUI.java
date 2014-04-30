@@ -123,26 +123,26 @@ public class DebugUI {
     // Sets all breakpoints, sends array of breakpoints to dvm
     // dvm deals with checking if valid breakpoint 
     void setBrk() {
-        Vector<Integer> breaks = new Vector<Integer>();
+        //Vector<Integer> breaks = new Vector<Integer>();
         String line = scanner.nextLine();
         String[] values = line.split("\\s+");
         int i = 1; 
         while(i < values.length) {
-          breaks.add(Integer.parseInt(values[i]));
+          //breaks.add(Integer.parseInt(values[i]));
           listBreaks.add(Integer.parseInt(values[i]));
           i++;
         }
-        if (!dvm.setBrks(breaks)) {
+        if (!dvm.setBrks(listBreaks)) {
             System.out.println("\n**** One or more Breakpoint(s) are invalid. Try Again.\n\n"
                     + "Breakpoints can only be set at following instructions:\n"
                     + "  blocks, while, if, return, assign\n");
         } else {
-            if(breaks.size() > 1) {
+            if(listBreaks.size() > 1) {
                 System.out.print("Breakpoints set at: ");    
             } else {
                 System.out.print("Breakpoint set at: ");
             }       
-            for (int point : breaks) {
+            for (int point : listBreaks) {
                 System.out.print(point + " ");
             }
         }
@@ -152,22 +152,22 @@ public class DebugUI {
     // Sends vector of breakpoints to dvm
     // dvm deals with clearing breakpoints
     public void clrBrk() {
-        Vector<Integer> breaks = new Vector<Integer>();
+        Vector<Integer> clrdBrks = new Vector<Integer>();
         String line = scanner.nextLine();
         String[] values = line.split("\\s+");
         int i = 1; 
         while(i < values.length) {
-          breaks.add(Integer.parseInt(values[i]));
-          listBreaks.remove(Integer.parseInt(values[i]));
+          clrdBrks.add(Integer.parseInt(values[i]));
+          listBreaks.remove((Object)Integer.parseInt(values[i]));
           i++;
         }
-        dvm.clrBrks(breaks);
-        if(breaks.size() > 1) {
+        dvm.clrBrks(clrdBrks);
+        if(clrdBrks.size() > 1) {
           System.out.print("Cleared breakpoints at: ");    
         } else {
             System.out.print("Cleared breakpoint at: ");
         }
-        for (int point : breaks) {
+        for (int point : clrdBrks) {
             System.out.print(point + " ");
         }
         System.out.println("\n");

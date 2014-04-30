@@ -49,12 +49,6 @@ public class DebugVirtualMachine extends VirtualMachine {
             // check bp
             if (code instanceof LineCode) {
 
-                // new line and stepIn = true, break
-                if(stepIn) {
-                  stepIn = false;
-                  nextEnvSize = -1;
-                  break;
-                }
                 LineCode tempLine = (LineCode) code;
                 
                 // check if bp set
@@ -95,10 +89,6 @@ public class DebugVirtualMachine extends VirtualMachine {
                 endFunc.push(temp.getEnd());
             }
 
-            // else good old curr bc execute(vm)
-            code.execute(this);
-            pc++;
-
             // check step out
             if(stepOut && (nextEnvSize == FERstack.size())) {
                 System.out.println("step out");
@@ -122,12 +112,31 @@ public class DebugVirtualMachine extends VirtualMachine {
                 break;
               }
               System.out.println("step in");
+              
+              // if fer same && new line
               // if fer +1 or new line 
-              if((nextEnvSize == FERstack.size()) || (code instanceof LineCode)) {
+              if((nextEnvSize == FERstack.size() - 1) && (code instanceof LineCode)) {
+                code.execute(this);
+                pc++;   
                 stepIn = false;
                 nextEnvSize = -1;
-                break;   
+                break; 
+              } else if(nextEnvSize == FERstack.size()) {
+                for (int i = 0; i < 2; i++) {
+                    code.execute(this);
+                    pc++;
+                    code = program.getCode(pc);
+                }
+                while(code instanceof FormalCode) {
+                    code.execute(this);
+                    pc++;
+                    code = program.getCode(pc);
+                }
+                stepIn = false;
+                nextEnvSize = -1;
+                break; 
               }
+              
             }
 
             // check step over
@@ -140,6 +149,11 @@ public class DebugVirtualMachine extends VirtualMachine {
                 break;
               }
             }
+
+            // else good old curr bc execute(vm)
+            code.execute(this);
+            pc++;
+
         }
     }
 
@@ -231,7 +245,11 @@ public class DebugVirtualMachine extends VirtualMachine {
       }
     }
 
-    public setIntrinsic(boolean boo) {
+    public boolean isIntrinsic() {
+        return isIntrinsic;
+    }
+
+    public void setIntrinsic(boolean boo) {
       isIntrinsic = boo;
     }
 
