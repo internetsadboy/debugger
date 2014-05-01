@@ -9,8 +9,8 @@ public class DebugUI {
     private Vector<Integer> listBreaks;
     private Vector<Source> src;
     private Scanner scanner;
-    int currentLine;
-    boolean firstPrint = true;
+    private int currentLine;
+    private boolean firstPrint = true;
 
     public DebugUI(DebugVirtualMachine dvm) {
       this.dvm = dvm;
@@ -21,6 +21,13 @@ public class DebugUI {
     }
 
     public void dumpSource() {
+        if(dvm.isTraceOn()) {
+            System.out.println();
+            Vector<String> temp = dvm.getTrace();
+            for(int i = 0; i < temp.size(); i++) {
+                System.out.println(temp.get(i));
+            }
+        }
         currentLine = dvm.getLine();
         int i = 0;
         System.out.println();
@@ -95,6 +102,10 @@ public class DebugUI {
                 dvm.setStep(false,false,true);
                 dvm.executeProgram();
                 break;
+            case "tr":
+                dvm.setTrace(true);
+                dvm.executeProgram();
+                break;
             default:
                 System.out.println("\n**** ERROR: Invalid Command type \"?\" for list of Commands\n");
                 userCommand();
@@ -117,6 +128,7 @@ public class DebugUI {
                 + "     |so|   step out of current function\n"
                 + "     |si|   step into current function\n"
                 + "     |sv|   step over current function\n" 
+                + "     |tr|   set trace on\n" 
                 + "------------------------------------------------------------\n\n");
     }
 

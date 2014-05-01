@@ -8,19 +8,20 @@ import java.io.*;
 
 public class DebugVirtualMachine extends VirtualMachine {
 
-    private Stack<FunctionEnvironmentRecord> FERstack;    
+    private Stack<FunctionEnvironmentRecord> FERstack;   
     private FunctionEnvironmentRecord fer;
     private Stack<Integer> startFunc;
     private Vector<Source> lineCode;
     private Stack<Integer> endFunc;
+    private Vector<String> trace;
     private boolean isIntrinsic;
     private boolean stepOver;
     private boolean stepOut;
     private boolean stepIn;
+    private boolean isTraceOn;
     private int nextEnvSize;
     private Source srcLine;
     private DebugUI ui;
-
 
     public DebugVirtualMachine(Program program) {
         super(program);
@@ -28,16 +29,18 @@ public class DebugVirtualMachine extends VirtualMachine {
         FERstack = new Stack<>();
         startFunc = new Stack<>();
         endFunc = new Stack<>();
+        trace = new Vector<String>();
         fer = new FunctionEnvironmentRecord();
         runStack = new RunTimeStack();
         returnAddr = new Stack();
-        pc = 0;
         isIntrinsic = false;
         isRunning = true;
         stepOut = false;
         stepIn = false;
         stepOver = false;
+        isTraceOn = false;
         nextEnvSize = -1;
+        pc = 0;
     }
 
     @Override
@@ -47,18 +50,7 @@ public class DebugVirtualMachine extends VirtualMachine {
             ByteCode code = program.getCode(pc);
 
             if(code instanceof FunctionCode) {
-                for(int i = 0; i < FERstack.size(); i++) {
-                    if(FERstack.size() == 1) {
-                        FERstack.get(i)).dump();    
-                    } else if(FERstack.size() > 1) {
-                        for(int j = 0; j < FERstack.get(i).size(); j++) {
-                            FERstack.get(i).dump()
-                        }
-                    } else {
-                        // do nothing
-                    }
-                    
-                }
+                
             }
 
             // check bp
@@ -230,10 +222,6 @@ public class DebugVirtualMachine extends VirtualMachine {
         return isRunning;
     }
 
-    public int getPC() {
-        return pc;
-    }
-
     public void newFER() {
         FERstack.push(fer);
         //System.out.println("push "+FERstack.size());
@@ -245,6 +233,47 @@ public class DebugVirtualMachine extends VirtualMachine {
         fer = FERstack.pop();
         //System.out.println("pop  "+FERstack.size());
     }
+
+    public void setTrace(boolean wtf) {
+        isTraceOn = wtf;
+    }
+
+    public boolean isTraceOn() {
+        return isTraceOn;
+    }
+
+    public Vector<String> getTrace() {
+        return trace;
+    }
+
+    public int getFERsize() {
+        return FERstack.size();
+    }
+
+    public String getFuncName() {
+        return fer.getName();
+    }
+
+    public String getValue(int offset) {
+        return runStack.getValue(offset);
+    }
+
+    public ByteCode getCode(int pc) {
+        return program.getCode(pc);
+    }
+
+    public int getPC() {
+        return pc;
+    }
+
+    public void clearTrace() {
+        trace.clear();
+    }
+
+    public void addTrace(String function) {
+        trace.add(function);
+    }
+
     
     // stepOut:  fer - 1
     // stepIn:   fer + 1, || new line

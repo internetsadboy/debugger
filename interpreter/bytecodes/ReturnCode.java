@@ -3,8 +3,8 @@ package interpreter.bytecodes;
 import interpreter.VirtualMachine;
 import java.util.*;
 
-public class ReturnCode extends ByteCode{
-    String label;
+public class ReturnCode extends ByteCode {
+    protected String label;
     protected int val;
 
     @Override
@@ -16,10 +16,12 @@ public class ReturnCode extends ByteCode{
 
     @Override
     public void init(Vector<String> args) {
-        if(args.size() > 0)
+        if(args.size() > 0) {
             label = args.get(0);
-        else
+        }
+        else {
             label = null;
+        }
     }
     
     @Override
