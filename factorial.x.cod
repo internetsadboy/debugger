@@ -15,7 +15,7 @@ LABEL start<<1>>
 LINE 1
 FUNCTION main 1 11
 LIT 0 j
-LIT 0 i
+LIT 0 i 
 GOTO continue<<3>>
 LABEL factorial<<2>>
 LINE 2

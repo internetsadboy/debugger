@@ -7,15 +7,20 @@ import java.util.*;
 
 public class FunctionCode extends ByteCode {
  
- private String name, start, end;
+  private String name, start, end;
 
  @Override
     public void execute(VirtualMachine vm) {
         DebugVirtualMachine dvm = (DebugVirtualMachine) vm;
+       // if(name.toLowerCase().equals("read") || name.toLowerCase().equals("write")) {
+       //     dvm.setIntrinsic(true);
+        //} else {
+            dvm.setFunc(name, getStart(), getEnd());    
+        //}
+        
         if (dvm.isTraceOn()) {
             String dontTrace = name.toLowerCase();
-            if(dontTrace != "main" && dontTrace != "read" && dontTrace != "write") {
-                System.out.println(dontTrace.toUpperCase());
+            if(!dontTrace.equals("main") && !dontTrace.equals("read") && !dontTrace.equals("write")) {
                 String function = "";
                 for (int i = 0; i < dvm.getFERsize(); i++) {
                     function += "  ";
@@ -28,9 +33,8 @@ public class FunctionCode extends ByteCode {
                     code = dvm.getCode(++pc);
                 }
                 dvm.addTrace(function + ")");
-            }
+            } 
         }
-        dvm.setFunc(name, getStart(), getEnd());
     }
 
     @Override

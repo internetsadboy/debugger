@@ -19,6 +19,7 @@ public class DebugVirtualMachine extends VirtualMachine {
     private boolean stepOut;
     private boolean stepIn;
     private boolean isTraceOn;
+    private boolean printCallStack;
     private int nextEnvSize;
     private Source srcLine;
     private DebugUI ui;
@@ -39,6 +40,7 @@ public class DebugVirtualMachine extends VirtualMachine {
         stepIn = false;
         stepOver = false;
         isTraceOn = false;
+        printCallStack = false;
         nextEnvSize = -1;
         pc = 0;
     }
@@ -49,9 +51,7 @@ public class DebugVirtualMachine extends VirtualMachine {
 
             ByteCode code = program.getCode(pc);
 
-            if(code instanceof FunctionCode) {
-                
-            }
+            // print call stack
 
             // check bp
             if (code instanceof LineCode) {
@@ -72,19 +72,21 @@ public class DebugVirtualMachine extends VirtualMachine {
                     code = program.getCode(pc);
                     
                     // exec function
+                    // update new func lines
                     if (code instanceof FunctionCode) {
+                        FunctionCode temp = (FunctionCode) code;
                         code.execute(this);
+                        startFunc.push(temp.getStart()); 
+                        endFunc.push(temp.getEnd());  
                         pc++;
                         code = program.getCode(pc);
-                        
                         // exec potential formal
                         while (code instanceof FormalCode) {
-                            code.execute(this);
-                            pc++;
-                            code = program.getCode(pc);
+                          code.execute(this);
+                          pc++;
+                          code = program.getCode(pc);
                         }
                     }
-                   
                     // return control to the debugger
                     break;
                 }
@@ -95,7 +97,6 @@ public class DebugVirtualMachine extends VirtualMachine {
                 startFunc.push(temp.getStart());
                 endFunc.push(temp.getEnd());
             }
-
             // check step out
             if(stepOut && (nextEnvSize == FERstack.size())) {
                 System.out.println("step out");
@@ -103,7 +104,6 @@ public class DebugVirtualMachine extends VirtualMachine {
                 nextEnvSize = -1;
                 break;
             }
-
             // check step in
             if(stepIn) {
               // instrinsic fxn, don't display source  
@@ -123,7 +123,6 @@ public class DebugVirtualMachine extends VirtualMachine {
                 break;
               }
               System.out.println("step in");
-              
               // if fer same && new line
               // if fer +1 or new line 
               if((nextEnvSize-1 == FERstack.size()) && (code instanceof LineCode)) {
@@ -149,7 +148,6 @@ public class DebugVirtualMachine extends VirtualMachine {
               }
               
             }
-
             // check step over
             if(stepOver) {
               System.out.println("step over");
@@ -160,11 +158,9 @@ public class DebugVirtualMachine extends VirtualMachine {
                 break;
               }
             }
-
             // else good old curr bc execute(vm)
             code.execute(this);
             pc++;
-
         }
     }
 
@@ -232,6 +228,10 @@ public class DebugVirtualMachine extends VirtualMachine {
     public void endFER() {
         fer = FERstack.pop();
         //System.out.println("pop  "+FERstack.size());
+    }
+
+    public void printStack(boolean print) {
+        printCallStack = print;
     }
 
     public void setTrace(boolean wtf) {

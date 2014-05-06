@@ -29,21 +29,42 @@ public class DebugUI {
             }
         }
         currentLine = dvm.getLine();
-        int i = 0;
+        int j = 0;
         System.out.println();
-        for (Source line : src) {
-            if (line.getIsBreakpoint()) {
-                System.out.print("*");
+        Vector<Integer> currentFunc = dvm.displayFunc();
+        if (currentFunc != null) {
+          int start = currentFunc.get(0);
+          int end = currentFunc.get(1);
+          for (int i = start-1; i < end; i++) {
+            Source line = src.get(i);
+            if(line.getIsBreakpoint()) {
+              System.out.print("*");
             } else {
-                System.out.print(" ");
+              System.out.print(" ");
             }
-            System.out.print(String.format("%2d", (src.indexOf(line) + 1)) + " ");
-            if (currentLine == i + 1) {
-                System.out.println(line.getSourceLine() + "         <------");
+            System.out.print(String.format("%2d",(src.indexOf(line)+1))+" ");
+            if (currentLine == j+2) {
+              System.out.println(line.getSourceLine()+"         <------");
             } else {
-                System.out.println(line.getSourceLine());
+              System.out.println(line.getSourceLine());
             }
-            i++;
+            j++;
+          }
+        } else {
+            for (Source line : src) {
+                if (line.getIsBreakpoint()) {
+                    System.out.print("*");
+                } else {
+                    System.out.print(" ");
+                }
+                System.out.print(String.format("%2d",(src.indexOf(line)+1))+" ");
+                if (currentLine == j + 1) {
+                    System.out.println(line.getSourceLine()+"         <------");
+                } else {
+                    System.out.println(line.getSourceLine());
+                }
+                j++;
+            }
         }
         System.out.println();
         if (firstPrint == true) {
@@ -106,6 +127,14 @@ public class DebugUI {
                 dvm.setTrace(true);
                 dvm.executeProgram();
                 break;
+            case "to":
+                dvm.setTrace(false);
+                dvm.executeProgram();
+                break;
+            case "ps":
+                dvm.printStack(true);
+                dvm.executeProgram();
+                break;
             default:
                 System.out.println("\n**** ERROR: Invalid Command type \"?\" for list of Commands\n");
                 userCommand();
@@ -117,7 +146,7 @@ public class DebugUI {
     public void help() {
         System.out.println("\n"
                 + "------------------------- Commands -------------------------\n"
-                + "     |?|    print help menu.\n"
+                + "     |?|    print help menu\n"
                 + "     |sb|   set breakpoints   (e.g. sb 3 6)\n"
                 + "     |cb|   clear breakpoints (e.g. cb 3 6)\n"
                 + "     |lb|   list break points\n"
@@ -129,6 +158,8 @@ public class DebugUI {
                 + "     |si|   step into current function\n"
                 + "     |sv|   step over current function\n" 
                 + "     |tr|   set trace on\n" 
+                + "     |to|   turn trace off\n"
+                + "     |ps|   print call stack\n"
                 + "------------------------------------------------------------\n\n");
     }
 
@@ -201,11 +232,16 @@ public class DebugUI {
     // Gets function lines from dvm
     // Prints source lines
     // if not in any function(s) should print entire program
-    void displayFunc() {
+    // currFunc -1 (corrects the first line being absent)
+    public void displayFunc() {
         //Print the current function we are in
         Vector<Integer> currentFunc = dvm.displayFunc();
         if (currentFunc != null) {
-            for (int i = currentFunc.get(0); i < currentFunc.get(1); i++) {
+            int start = currentFunc.get(0);
+            int end = currentFunc.get(1);
+            //System.out.println("start "+start);
+            //System.out.println("end   "+end);
+            for (int i = start-1; i < end; i++) {
                 System.out.println(src.get(i).getSourceLine());
             }
         } else {
