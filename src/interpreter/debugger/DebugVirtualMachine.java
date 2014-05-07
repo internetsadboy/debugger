@@ -109,12 +109,6 @@ public class DebugVirtualMachine extends VirtualMachine {
                 FunctionCode temp = (FunctionCode) code;
                 startFunc.push(temp.getStart());
                 endFunc.push(temp.getEnd());
-                
-                    String funcName = temp.getName();
-                    if(!funcName.equals("Read") && !funcName.equals("Write")) {
-                      //System.out.println(funcName+": "+currLineNum);   
-                      //callStack.push(funcName); // add func to callStack 
-                    }
             }
 
             // check step out
@@ -237,14 +231,12 @@ public class DebugVirtualMachine extends VirtualMachine {
 
     public void newFER() {
         FERstack.push(fer);
-        //System.out.println("push "+FERstack.size());
         fer = new FunctionEnvironmentRecord();
         fer.beginScope();
     }
 
     public void endFER() {
         fer = FERstack.pop();
-        //System.out.println("pop  "+FERstack.size());
     }
 
     public void setTrace(boolean wtf) {
@@ -356,7 +348,7 @@ public class DebugVirtualMachine extends VirtualMachine {
             FunctionEnvironmentRecord temp = (FunctionEnvironmentRecord) FER;
             String name2 = temp.getName();
             if(!name2.equals("Read") && !name2.equals("Write")) {
-              callStack.add(name+ ": " + temp.getCurrentLine());
+              callStack.add(name2+ ": " + temp.getCurrentLine());
             }
         }
         return callStack;

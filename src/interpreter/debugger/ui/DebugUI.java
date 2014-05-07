@@ -231,7 +231,7 @@ public class DebugUI {
                       if(src.get(i).getIsBreakpoint()) {
                         System.out.print(" *"+j+" "+src.get(i).getSourceLine()); 
                       } else {
-                        System.out.print("  "+j+" "+src.get(i).getSourceLine());  
+                        System.out.print(" "+j+" "+src.get(i).getSourceLine());  
                       }
                     }
                     if(currentLine == i+1) {
@@ -280,10 +280,6 @@ public class DebugUI {
             System.out.println("ID: " + variables[i][0] + "     Value: " + variables[i][1]);
         }
         System.out.println();
-    }
-
-    public void setInnerFunc(boolean b) {
-        innerFunc = b;
     }
 
     public void printStack() {
