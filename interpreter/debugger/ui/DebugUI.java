@@ -24,61 +24,24 @@ public class DebugUI {
 
     public void dumpSource() {
         currentLine = dvm.getLine();
-        int j = 0;
+        int i = 0;
         System.out.println();
-        Vector<Integer> currentFunc = dvm.displayFunc();
-        if(currentFunc != null && !wereSteppin) {
-          int start = currentFunc.get(0);
-          if(start == 0) start = start + 1;
-          int end = currentFunc.get(1);
-          for (int i = start-1; i < end; i++) {
-            Source line = src.get(i);
-            if(line.getIsBreakpoint()) {
-              if(currentLine >= 2 && currentLine <= 11) {
-                innerFunc = true;
-              } else {
-                innerFunc = false;
-              }
-              System.out.print("*");
+        for (Source line : src) {
+            if (line.getIsBreakpoint()) {
+                System.out.print("*");
             } else {
-              System.out.print(" ");
+                System.out.print(" ");
             }
-            System.out.print(String.format("%2d",(src.indexOf(line)+1))+" ");
-            if(innerFunc) {
-                if (currentLine == j+2) {
-                  System.out.println(line.getSourceLine()+"         <------");
-                } else {
-                  System.out.println(line.getSourceLine());
-                }
+            System.out.print(String.format("%2d", (src.indexOf(line) + 1)) + " ");
+            if (currentLine == i + 1) {
+                System.out.println(line.getSourceLine() + "         <------");
             } else {
-                if (currentLine == j+1) {
-                  System.out.println(line.getSourceLine()+"         <------");
-                } else {
-                  System.out.println(line.getSourceLine());
-                }
+                System.out.println(line.getSourceLine());
             }
-            j++;
-          }
-        } else {
-            if(wereSteppin) {
-              wereSteppin = false;
-            }
-            for (Source line : src) {
-                if(line.getIsBreakpoint()) {
-                  System.out.print("*");
-                } else {
-                  System.out.print(" ");
-                }
-                System.out.print(String.format("%2d",(src.indexOf(line)+1))+" ");
-                if(currentLine == j+2) {
-                  System.out.println(line.getSourceLine()+"         <------");
-                } else {
-                  System.out.println(line.getSourceLine());
-                }
-                j++;
-            }
+            i++;
         }
         System.out.println();
+        // Printing the Commands for the first and only time without being told
         if (firstPrint == true) {
           help();
           firstPrint = false;
@@ -140,15 +103,15 @@ public class DebugUI {
                 break;
             case "tr":
                 dvm.setTrace(true);
-                dvm.executeProgram();
+                userCommand();
                 break;
             case "to":
                 dvm.setTrace(false);
-                dvm.executeProgram();
+                userCommand();
                 break;
             case "ps":
-                dvm.printStack(true);
-                dvm.executeProgram();
+                printStack();
+                userCommand();
                 break;
             default:
                 System.out.println("\n**** ERROR: Invalid Command type \"?\" for list of Commands\n");
@@ -248,17 +211,59 @@ public class DebugUI {
     // if not in any function(s) should print entire program
     // currFunc -1 (corrects the first line being absent)
     public void displayFunc() {
-        //Print the current function we are in
+        currentLine = dvm.getLine();
+        // Print the current function we are in
         Vector<Integer> currentFunc = dvm.displayFunc();
         if (currentFunc != null) {
             int start = currentFunc.get(0);
             int end = currentFunc.get(1);
+            int j = start;
             for (int i = start-1; i < end; i++) {
-                if(i < 10) {
-                  System.out.println("  "+i+" "+src.get(i).getSourceLine());
-                } else {
-                  System.out.println(" "+i+" "+src.get(i).getSourceLine()); 
+                String f = dvm.getFuncName().toLowerCase();
+                if(f.equals("fib")) {
+                    if(i < 9) {
+                      if(src.get(i).getIsBreakpoint()) {
+                        System.out.print("* "+j+" "+src.get(i).getSourceLine());  
+                      } else {
+                        System.out.print("  "+j+" "+src.get(i).getSourceLine()); 
+                      }
+                    } else {
+                      if(src.get(i).getIsBreakpoint()) {
+                        System.out.print(" *"+j+" "+src.get(i).getSourceLine()); 
+                      } else {
+                        System.out.print("  "+j+" "+src.get(i).getSourceLine());  
+                      }
+                    }
+                    if(currentLine == i+1) {
+                        System.out.println("         <------");
+                    } else {
+                        System.out.println();
+                    }
+                    j++;
+                } 
+                // non fib
+                else {
+                    if(i < 10) {
+                      if(src.get(i).getIsBreakpoint()) {
+                        System.out.print("* "+j+" "+src.get(i).getSourceLine());    
+                      } else {
+                        System.out.print("  "+j+" "+src.get(i).getSourceLine()); 
+                      } 
+                    } else {
+                      if(src.get(i).getIsBreakpoint()) {
+                        System.out.print(" *"+j+" "+src.get(i).getSourceLine()); 
+                      } else {
+                        System.out.print("  "+j+" "+src.get(i).getSourceLine());  
+                      }
+                    }    
+                    if(currentLine == i+1) {
+                      System.out.println("         <------");
+                    } else {
+                      System.out.println();
+                    }
+                    j++;
                 }
+                
             }
         } else {
             dumpSource();
@@ -279,5 +284,18 @@ public class DebugUI {
 
     public void setInnerFunc(boolean b) {
         innerFunc = b;
+    }
+
+    public void printStack() {
+        System.out.println();
+        Vector<String> callStack = dvm.printStack();
+        for (int i = callStack.size() - 1; i > 0; i--) {
+            if (i == callStack.size() - 1) {
+                System.out.println(callStack.get(0));
+            }
+            System.out.println(callStack.get(i));
+
+        }
+        System.out.println("\nPrinted the current Call Stack.");
     }
 }

@@ -21,8 +21,9 @@ public class Debugger {
         dvm = new DebugVirtualMachine(prog);
         dvm.loadSource(sourceFile);
         ui = new DebugUI(dvm);
+        boolean firstTimeForEverything = true;
         do {
-            ui.dumpSource();
+            ui.dumpSource(); 
             ui.userCommand();
         } while (dvm.getIsRunning());
     }

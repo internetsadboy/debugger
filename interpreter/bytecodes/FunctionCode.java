@@ -18,14 +18,14 @@ public class FunctionCode extends ByteCode {
             if(!dontTrace.equals("main") && !dontTrace.equals("read") && !dontTrace.equals("write")) {
                 String function = "";
                 for (int i = 0; i < dvm.getFERsize(); i++) {
-                    function += "  ";
+                  function += "  ";
                 } 
                 function += name + "(";
                 int pc = dvm.getPC() + 1;
                 ByteCode code = dvm.getCode(pc);
                 while (code instanceof FormalCode) {
-                    function += dvm.getValue(dvm.getRunStackSize() - Integer.parseInt(((FormalCode) code).getOffset())) + "";
-                    code = dvm.getCode(++pc);
+                  function += dvm.getValue(dvm.getRunStackSize() - Integer.parseInt(((FormalCode) code).getOffset())) + "";
+                  code = dvm.getCode(++pc);
                 }
                 System.out.println(function+")");
             } 

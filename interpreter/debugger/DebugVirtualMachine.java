@@ -64,14 +64,6 @@ public class DebugVirtualMachine extends VirtualMachine {
         while (isRunning) {
 
             ByteCode code = program.getCode(pc);
-
-            // print call stack
-            if(getPrintStack()) {
-              for(int i = 0; i < FERstack.size(); i++) {
-                FunctionEnvironmentRecord curr = FERstack.get(i);
-                System.out.println(curr.getName()+": "+curr.getCurrentLine()+"\n");
-              }
-            }
             
             // check bp
             if (code instanceof LineCode) {
@@ -117,13 +109,12 @@ public class DebugVirtualMachine extends VirtualMachine {
                 FunctionCode temp = (FunctionCode) code;
                 startFunc.push(temp.getStart());
                 endFunc.push(temp.getEnd());
-                //if(getPrintStack()) {
+                
                     String funcName = temp.getName();
                     if(!funcName.equals("Read") && !funcName.equals("Write")) {
                       //System.out.println(funcName+": "+currLineNum);   
                       //callStack.push(funcName); // add func to callStack 
                     }
-                //}
             }
 
             // check step out
@@ -132,7 +123,7 @@ public class DebugVirtualMachine extends VirtualMachine {
                 nextEnvSize = -1;
                 break;
             }
-            
+
             // check step in
             if(stepIn) {
               // instrinsic fxn, don't display source  
@@ -256,14 +247,6 @@ public class DebugVirtualMachine extends VirtualMachine {
         //System.out.println("pop  "+FERstack.size());
     }
 
-    public void printStack(boolean print) {
-        printCallStack = print;
-    }
-
-    public boolean getPrintStack() {
-        return printCallStack;
-    }
-
     public void setTrace(boolean wtf) {
         isTraceOn = wtf;
     }
@@ -360,6 +343,23 @@ public class DebugVirtualMachine extends VirtualMachine {
 
     public boolean getStepOut() {
         return stepOut;
+    }
+
+    public Vector<String> printStack(){
+        Vector<String> callStack = new Vector<String>();
+        String name = fer.getName();
+        if(!name.equals("Read") && !name.equals("Write")) {
+          callStack.add(fer.getName() + ": " + fer.getCurrentLine());    
+        } 
+        Object[] stack = FERstack.toArray();
+        for (Object FER : stack) {
+            FunctionEnvironmentRecord temp = (FunctionEnvironmentRecord) FER;
+            String name2 = temp.getName();
+            if(!name2.equals("Read") && !name2.equals("Write")) {
+              callStack.add(name+ ": " + temp.getCurrentLine());
+            }
+        }
+        return callStack;
     }
 
 }
