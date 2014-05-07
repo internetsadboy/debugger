@@ -4,7 +4,7 @@ import interpreter.bytecodes.ReturnCode;
 import interpreter.*;
 import interpreter.debugger.DebugVirtualMachine;
 
-public class DebugReturnCode extends ReturnCode{
+public class DebugReturnCode extends ReturnCode {
   @Override
   public void execute(VirtualMachine vm) {
     DebugVirtualMachine dvm = (DebugVirtualMachine) vm;
@@ -16,8 +16,8 @@ public class DebugReturnCode extends ReturnCode{
 	      for (int i = 0; i < dvm.getFERsize(); i++) {
 	          name += "  ";
 	      }
-	      name += "exit: " + dvm.getFuncName() + ": " + val;
-	      dvm.addTrace(name);
+	      name += "exit " + dvm.getFuncName() + ": " + val;
+        System.out.println(name);
 	    }
     }  
     dvm.endFER();

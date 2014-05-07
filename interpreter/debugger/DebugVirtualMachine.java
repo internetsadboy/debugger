@@ -1,15 +1,25 @@
 package interpreter.debugger;
 
+import interpreter.bytecodes.debugbytecodes.*;
 import interpreter.debugger.ui.*;
 import interpreter.bytecodes.*;
 import interpreter.*;
 import java.util.*;
 import java.io.*;
 
+// every time we see main or factorial -> push name to stack
+// check fer size to see if there is a new fxn call 
+// old call(s) -> static
+// update current line for most recent call
+// if fer decreases pop curr fxn
+// if fer increases push curr fxn
+
 public class DebugVirtualMachine extends VirtualMachine {
 
     private Stack<FunctionEnvironmentRecord> FERstack;   
     private FunctionEnvironmentRecord fer;
+    private Stack<Integer> callStackLines;
+    private Stack<String> callStack;
     private Stack<Integer> startFunc;
     private Vector<Source> lineCode;
     private Stack<Integer> endFunc;
@@ -23,6 +33,7 @@ public class DebugVirtualMachine extends VirtualMachine {
     private int nextEnvSize;
     private Source srcLine;
     private DebugUI ui;
+    private int currLineNum;
 
     public DebugVirtualMachine(Program program) {
         super(program);
@@ -34,6 +45,8 @@ public class DebugVirtualMachine extends VirtualMachine {
         fer = new FunctionEnvironmentRecord();
         runStack = new RunTimeStack();
         returnAddr = new Stack();
+        callStack = new Stack<String>();
+        callStackLines = new Stack<Integer>();
         isIntrinsic = false;
         isRunning = true;
         stepOut = false;
@@ -42,6 +55,7 @@ public class DebugVirtualMachine extends VirtualMachine {
         isTraceOn = false;
         printCallStack = false;
         nextEnvSize = -1;
+        currLineNum = -1;
         pc = 0;
     }
 
@@ -52,11 +66,18 @@ public class DebugVirtualMachine extends VirtualMachine {
             ByteCode code = program.getCode(pc);
 
             // print call stack
-
+            if(getPrintStack()) {
+              for(int i = 0; i < FERstack.size(); i++) {
+                FunctionEnvironmentRecord curr = FERstack.get(i);
+                System.out.println(curr.getName()+": "+curr.getCurrentLine()+"\n");
+              }
+            }
+            
             // check bp
             if (code instanceof LineCode) {
 
                 LineCode tempLine = (LineCode) code;
+                currLineNum = tempLine.getLineNum();
                 
                 // check if bp set
                 if (tempLine.getLineNum() > 0 && lineCode.get(tempLine.getLineNum() - 1).getIsBreakpoint()) {
@@ -96,14 +117,22 @@ public class DebugVirtualMachine extends VirtualMachine {
                 FunctionCode temp = (FunctionCode) code;
                 startFunc.push(temp.getStart());
                 endFunc.push(temp.getEnd());
+                //if(getPrintStack()) {
+                    String funcName = temp.getName();
+                    if(!funcName.equals("Read") && !funcName.equals("Write")) {
+                      //System.out.println(funcName+": "+currLineNum);   
+                      //callStack.push(funcName); // add func to callStack 
+                    }
+                //}
             }
+
             // check step out
             if(stepOut && (nextEnvSize == FERstack.size())) {
-                System.out.println("step out");
                 stepOut = false;
                 nextEnvSize = -1;
                 break;
             }
+            
             // check step in
             if(stepIn) {
               // instrinsic fxn, don't display source  
@@ -122,9 +151,8 @@ public class DebugVirtualMachine extends VirtualMachine {
                 isIntrinsic = true;
                 break;
               }
-              System.out.println("step in");
               // if fer same && new line
-              // if fer +1 or new line 
+              // else if fer +1 or new line 
               if((nextEnvSize-1 == FERstack.size()) && (code instanceof LineCode)) {
                 code.execute(this);
                 pc++;   
@@ -150,7 +178,6 @@ public class DebugVirtualMachine extends VirtualMachine {
             }
             // check step over
             if(stepOver) {
-              System.out.println("step over");
               // if set, fer +0, && new line
               if((nextEnvSize == FERstack.size()) && (code instanceof LineCode)) {
                 stepOver = false;
@@ -165,15 +192,14 @@ public class DebugVirtualMachine extends VirtualMachine {
     }
 
     public void loadSource(String sourceFile) throws FileNotFoundException, IOException {
-        BufferedReader reader = (new BufferedReader(new FileReader(sourceFile)));
-        String nextLine;
-
-        while (reader.ready()) {
-            srcLine = new Source();
-            nextLine = reader.readLine();
-            srcLine.setSourceLine(nextLine);
-            lineCode.add(srcLine);
-        }
+      BufferedReader reader = (new BufferedReader(new FileReader(sourceFile)));
+      String nextLine;
+      while (reader.ready()) {
+        srcLine = new Source();
+        nextLine = reader.readLine();
+        srcLine.setSourceLine(nextLine);
+        lineCode.add(srcLine);
+      }
     }
 
     public void setCrrntLine(int currentLine) {
@@ -232,6 +258,10 @@ public class DebugVirtualMachine extends VirtualMachine {
 
     public void printStack(boolean print) {
         printCallStack = print;
+    }
+
+    public boolean getPrintStack() {
+        return printCallStack;
     }
 
     public void setTrace(boolean wtf) {
@@ -326,6 +356,10 @@ public class DebugVirtualMachine extends VirtualMachine {
 
     public void popSymbol(int offset) {
         fer.popIds(offset);
+    }
+
+    public boolean getStepOut() {
+        return stepOut;
     }
 
 }

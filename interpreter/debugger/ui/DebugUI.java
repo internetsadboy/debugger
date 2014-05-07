@@ -11,6 +11,8 @@ public class DebugUI {
     private Scanner scanner;
     private int currentLine;
     private boolean firstPrint = true;
+    private boolean innerFunc = false;
+    private boolean wereSteppin = false;
 
     public DebugUI(DebugVirtualMachine dvm) {
       this.dvm = dvm;
@@ -21,47 +23,57 @@ public class DebugUI {
     }
 
     public void dumpSource() {
-        if(dvm.isTraceOn()) {
-            System.out.println();
-            Vector<String> temp = dvm.getTrace();
-            for(int i = 0; i < temp.size(); i++) {
-                System.out.println(temp.get(i));
-            }
-        }
         currentLine = dvm.getLine();
         int j = 0;
         System.out.println();
         Vector<Integer> currentFunc = dvm.displayFunc();
-        if (currentFunc != null) {
+        if(currentFunc != null && !wereSteppin) {
           int start = currentFunc.get(0);
+          if(start == 0) start = start + 1;
           int end = currentFunc.get(1);
           for (int i = start-1; i < end; i++) {
             Source line = src.get(i);
             if(line.getIsBreakpoint()) {
+              if(currentLine >= 2 && currentLine <= 11) {
+                innerFunc = true;
+              } else {
+                innerFunc = false;
+              }
               System.out.print("*");
             } else {
               System.out.print(" ");
             }
             System.out.print(String.format("%2d",(src.indexOf(line)+1))+" ");
-            if (currentLine == j+2) {
-              System.out.println(line.getSourceLine()+"         <------");
+            if(innerFunc) {
+                if (currentLine == j+2) {
+                  System.out.println(line.getSourceLine()+"         <------");
+                } else {
+                  System.out.println(line.getSourceLine());
+                }
             } else {
-              System.out.println(line.getSourceLine());
+                if (currentLine == j+1) {
+                  System.out.println(line.getSourceLine()+"         <------");
+                } else {
+                  System.out.println(line.getSourceLine());
+                }
             }
             j++;
           }
         } else {
+            if(wereSteppin) {
+              wereSteppin = false;
+            }
             for (Source line : src) {
-                if (line.getIsBreakpoint()) {
-                    System.out.print("*");
+                if(line.getIsBreakpoint()) {
+                  System.out.print("*");
                 } else {
-                    System.out.print(" ");
+                  System.out.print(" ");
                 }
                 System.out.print(String.format("%2d",(src.indexOf(line)+1))+" ");
-                if (currentLine == j + 1) {
-                    System.out.println(line.getSourceLine()+"         <------");
+                if(currentLine == j+2) {
+                  System.out.println(line.getSourceLine()+"         <------");
                 } else {
-                    System.out.println(line.getSourceLine());
+                  System.out.println(line.getSourceLine());
                 }
                 j++;
             }
@@ -100,6 +112,7 @@ public class DebugUI {
                 dvm.executeProgram();
                 break;
             case "qe":
+                System.out.println("**** execution stopped ****");
                 dvm.setIsRunning(false);
                 break;
             case "dv":
@@ -113,15 +126,17 @@ public class DebugUI {
                 break;
             case "so":
                 dvm.setStep(true,false,false);
+                wereSteppin = true;
                 dvm.executeProgram();
                 break;
             case "si":
                 dvm.setStep(false,true,false);
+                setInnerFunc(false);
                 dvm.executeProgram();
                 break;
             case "sv":
                 dvm.setStep(false,false,true);
-                dvm.executeProgram();
+                //dvm.executeProgram();
                 break;
             case "tr":
                 dvm.setTrace(true);
@@ -171,7 +186,6 @@ public class DebugUI {
         String[] values = line.split("\\s+");
         int i = 1; 
         while(i < values.length) {
-          //breaks.add(Integer.parseInt(values[i]));
           listBreaks.add(Integer.parseInt(values[i]));
           i++;
         }
@@ -239,10 +253,12 @@ public class DebugUI {
         if (currentFunc != null) {
             int start = currentFunc.get(0);
             int end = currentFunc.get(1);
-            //System.out.println("start "+start);
-            //System.out.println("end   "+end);
             for (int i = start-1; i < end; i++) {
-                System.out.println(src.get(i).getSourceLine());
+                if(i < 10) {
+                  System.out.println("  "+i+" "+src.get(i).getSourceLine());
+                } else {
+                  System.out.println(" "+i+" "+src.get(i).getSourceLine()); 
+                }
             }
         } else {
             dumpSource();
@@ -259,5 +275,9 @@ public class DebugUI {
             System.out.println("ID: " + variables[i][0] + "     Value: " + variables[i][1]);
         }
         System.out.println();
+    }
+
+    public void setInnerFunc(boolean b) {
+        innerFunc = b;
     }
 }

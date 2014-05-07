@@ -21,19 +21,7 @@ public class Debugger {
         dvm = new DebugVirtualMachine(prog);
         dvm.loadSource(sourceFile);
         ui = new DebugUI(dvm);
-        boolean firstInteraction = true;
         do {
-            /*
-            if(!dvm.isIntrinsic()) {
-              if(firstInteraction) {
-                ui.dumpSource();
-                firstInteraction = false;
-              } else {
-                ui.displayFunc();        
-              }
-            } else {
-              dvm.setIntrinsic(false);
-            }*/
             ui.dumpSource();
             ui.userCommand();
         } while (dvm.getIsRunning());
